@@ -17,11 +17,9 @@ find_package(nlohmann_json CONFIG REQUIRED)
 
 add_executable(backend  server.cpp http_tcpServer.cpp)
 
-if(WIN32)
-  target_link_libraries(backend PRIVATE nlohmann_json::nlohmann_json PRIVATE cpr::cpr wsock32 ws2_32)
-endif()
+
+target_link_libraries(backend PRIVATE nlohmann_json::nlohmann_json wsock32 ws2_32)
 
 # target_link_libraries(backend PRIVATE nlohmann_json::nlohmann_json)
-# target_link_libraries(backend PRIVATE cpr::cpr)
-# target_link_libraries(backend libwsock32.a)
+target_link_libraries(backend PRIVATE cpr::cpr)
 
