@@ -14,6 +14,7 @@ namespace http
         TcpServer(std::string ip_addres, int port);
         ~TcpServer();
         void startListen();
+        std::string parse(std::string req);
 
     private:
         std::string m_ip_address;
@@ -29,8 +30,8 @@ namespace http
         int startServer();
         void closeServer();
         void acceptConnection(SOCKET &new_socket);
-        std::string buildResponse();
-        void sendResponse();
+        std::string buildResponse(std::string clientReq);
+        void sendResponse(std::string clientReq);
     };
 
 }

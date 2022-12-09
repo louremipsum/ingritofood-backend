@@ -1,11 +1,13 @@
 #include <http_tcpServer.h>
-
+#include <get_receipe_by_id.h>
+#include <get_receipe_by_ingri.h>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 
 namespace
 {
-    const int BUFFER_SIZE = 30720;
+    const int BUFFER_SIZE = 60720;
     void log(const std::string &message)
     {
         std::cout << message << std::endl;
@@ -23,7 +25,7 @@ namespace http
 {
 
     TcpServer::TcpServer(std::string ip_address, int port)
-        : m_ip_address(ip_address), m_port(port), m_socket(), m_socketAddress_len(sizeof(m_socketAddress)), m_serverMessage(buildResponse())
+        : m_ip_address(ip_address), m_port(port), m_socket(), m_socketAddress_len(sizeof(m_socketAddress))
     {
         m_socketAddress.sin_family = AF_INET;
         m_socketAddress.sin_port = htons(m_port);
@@ -98,10 +100,15 @@ namespace http
             }
 
             std::ostringstream ss;
+            std::ostringstream send;
             ss << "-------- Received Request from the client --------\n\n";
             log(ss.str());
-
-            sendResponse();
+            // TODO:
+            send << buffer;
+            log("RESP from Client");
+            log(send.str());
+            std::cout << std::endl;
+            sendResponse(send.str());
 
             closesocket(m_new_socket);
         }
@@ -120,20 +127,28 @@ namespace http
     }
 
     // Calling the func which calls the APIs
-    std::string TcpServer::buildResponse()
+    std::string TcpServer::buildResponse(std::string clientReq)
     {
-        std::string htmlFile = "<!DOCTYPE html><html lang=\"en\"><body><h1> HOME </h1><p> Hello from your Server :) </p></body></html>";
+        // std::string res = grbIngri::obj.makeReq(parse(clientReq));
+        std::string res = parse(clientReq);
         std::ostringstream ss;
-        ss << "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: " << htmlFile.size() << "\n\n"
-           << htmlFile;
+
+        ss << "HTTP/1.1 200 OK\r\n"
+           << "Content-Type: application/json; charset=utf-8\r\n"
+           << "Access-Control-Allow-Origin: *\r\n"
+           << "content-length: " << res.size() << "\r\n\r\n"
+           << res;
+        std::cout << ss.str() << std::endl;
 
         return ss.str();
     }
 
-    void TcpServer::sendResponse()
+    void TcpServer::sendResponse(std::string clientReq)
     {
         int bytesSent;
         long totalBytesSent = 0;
+        m_serverMessage = buildResponse(clientReq);
+        // m_serverMessage = "Hello from server";
 
         while (totalBytesSent < m_serverMessage.size())
         {
@@ -153,6 +168,38 @@ namespace http
         {
             log("Error sending response to client.");
         }
+    }
+
+    /// @brief Parsing the req by client and making the appropriate API call and returning the result from the said call
+    /// @param clientReq
+    /// @return res
+    std::string TcpServer::parse(std::string clientReq)
+    {
+        std::istringstream stream(clientReq);
+        std::string line, r, type, res, t;
+        int i = 0;
+        std::cout << "=----------==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=";
+        while (std::getline(stream, line))
+        {
+            i++;
+            r = line;
+            if (i == 20)
+            {
+                type = r + "\n";
+            }
+        }
+        if (type == "ingri\r\n")
+        {
+            res = grbIngri::obj.makeReq(r);
+        }
+        if (type == "id\r\n")
+        {
+            std::cout << "ID wala pakda" << std::endl;
+            std::cout << "ID r-> " << r << std::endl;
+            res = grbId::obj.makeReq(r);
+            std::cout << res << std::endl;
+        }
+        return res;
     }
 
 } // namespace http
