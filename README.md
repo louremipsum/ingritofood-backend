@@ -1,6 +1,8 @@
 # ingritofood-backend
 Backend services for ingritofood 
 
+![Backend](https://user-images.githubusercontent.com/72456774/208958257-c1440e8f-288d-4a2e-bddb-9899c951514e.png)
+
 IngritoFood -> See what recipes can be made from the ingredients you have at hand. Made with ReactJS and C++ backend and a
 TCP Server written in C++ to communicate between frontend and backend.
 
